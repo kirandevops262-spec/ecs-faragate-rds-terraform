@@ -49,14 +49,25 @@ resource "aws_iam_role_policy" "ecs_task_execution_ssm" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "ssm:GetParameters",
-        "ssm:GetParameter"
-      ]
-      Resource = [for name in var.ssm_secret_names : "arn:aws:ssm:${var.aws_region}:*:parameter${name}"]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter"
+        ]
+        Resource = length(var.ssm_secret_names) > 0 ? [
+          for name in var.ssm_secret_names : "arn:aws:ssm:${var.aws_region}:*:parameter${name}"
+        ] : ["arn:aws:ssm:${var.aws_region}:*:parameter/*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      }
+    ]
   })
 }
 
