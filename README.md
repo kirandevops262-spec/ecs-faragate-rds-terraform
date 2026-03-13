@@ -1,11 +1,11 @@
-# ECS Fargate + RDS Terraform
+# ECS + RDS Terraform
 
-This repository deploys a full **AWS ECS Fargate** application stack (frontend + backend) backed by an **RDS MySQL** database, all provisioned using **Terraform**.
+This repository deploys a full **AWS ECS Fargate** application stack (frontend + backend) backed by an **RDS MySQL** database, all provisioned using **Terraform**. ECS compute runs serverlessly (Fargate) and is fronted by **Application Load Balancers**.
 
 ## What This Project Deploys
 
 - **VPC** (public + private subnets) with NAT gateways
-- **ECS Fargate cluster** with two services (frontend + backend)
+- **ECS Fargate cluster** (serverless compute) with services (frontend + backend)
 - **Application Load Balancers** (frontend + backend)
 - **ECR repositories** for frontend and backend images
 - **RDS MySQL instance** in private subnets
@@ -137,7 +137,8 @@ terraform destroy
 │   ├── iam/                # IAM roles & policies
 │   ├── rds/                # RDS MySQL instance
 │   ├── security-groups/    # Security groups (ALB, ECS, RDS)
-│   └── vpc/                # VPC, subnets, NAT, routing
+│   ├── vpc/                # VPC, subnets, NAT, routing
+│   └── asg/                # (Unused) EC2 Auto Scaling Group module
 ├── main.tf                 # Root module wiring modules together
 ├── variables.tf            # Input variables
 ├── terraform.tfvars        # Example variable values (edit this)
