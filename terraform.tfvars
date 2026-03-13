@@ -19,7 +19,7 @@ cluster_name = "prod-ecs-cluster"
 # Frontend Configuration (Use your ECR repository URL)
 frontend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-frontend:latest"
 frontend_port          = 80
-frontend_desired_count = 2
+frontend_desired_count = 0  # Set to 0 until you push your application image
 frontend_cpu           = 256
 frontend_memory        = 512
 frontend_env_vars = [
@@ -32,7 +32,7 @@ frontend_env_vars = [
 # Backend Configuration (Use your ECR repository URL)
 backend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-backend:latest"
 backend_port          = 3000
-backend_desired_count = 2
+backend_desired_count = 0  # Set to 0 until you push your application image
 backend_cpu           = 512
 backend_memory        = 1024
 backend_env_vars      = []
