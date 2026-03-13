@@ -13,6 +13,12 @@ This repository deploys a full **AWS ECS Fargate** application stack (frontend +
 - **IAM roles** for ECS task execution and service permissions
 - **CloudWatch log groups** for ECS tasks
 
+## Architecture Diagram
+
+![Architecture Diagram](./architecture.svg)
+
+This diagram shows how the components are wired together (VPC, ALB, ECS, and RDS) and how traffic flows between them.
+
 ## Prerequisites
 
 - AWS account with permissions to create VPC, ECS, IAM, RDS, ALB, etc.
