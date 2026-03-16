@@ -1,19 +1,31 @@
-variable "service_name" {
-  type = string
+variable "name" {
+  description = "Name prefix for ALB"
+  type        = string
 }
 
 variable "vpc_id" {
-  type = string
+  description = "VPC ID"
+  type        = string
 }
 
 variable "public_subnet_ids" {
-  type = list(string)
+  description = "Public subnet IDs for ALB"
+  type        = list(string)
 }
 
 variable "alb_security_group_id" {
-  type = string
+  description = "ALB security group ID"
+  type        = string
 }
 
-variable "container_port" {
-  type = number
+variable "frontend_port" {
+  description = "Frontend container port"
+  type        = number
+  default     = 80
+}
+
+variable "backend_port" {
+  description = "Backend container port"
+  type        = number
+  default     = 3000
 }

@@ -1,11 +1,6 @@
-output "frontend_alb_dns_name" {
-  description = "DNS name of the Frontend ALB"
-  value       = module.alb_frontend.alb_dns_name
-}
-
-output "backend_alb_dns_name" {
-  description = "DNS name of the Backend ALB"
-  value       = module.alb_backend.alb_dns_name
+output "alb_dns_name" {
+  description = "DNS name of the ALB"
+  value       = module.alb.alb_dns_name
 }
 
 output "ecs_cluster_name" {

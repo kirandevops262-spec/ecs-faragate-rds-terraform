@@ -8,6 +8,7 @@ data "aws_ssm_parameter" "db_password" {
   with_decryption = true
 }
 
+# IAM Module
 module "iam" {
   source = "./modules/iam"
 
@@ -41,62 +42,53 @@ module "ecr_backend" {
   repository_name = "${var.environment}-backend"
 }
 
-# Security Groups - Frontend ALB
-module "sg_frontend_alb" {
+# Security Group - Single ALB
+module "sg_alb" {
   source = "./modules/security-groups/sg-frontend-alb"
 
-  name   = "${var.environment}-frontend"
+  name   = "${var.environment}"
   vpc_id = module.vpc.vpc_id
 }
 
-# Security Groups - Backend ALB
-module "sg_backend_alb" {
-  source = "./modules/security-groups/sg-backend-alb"
-
-  name   = "${var.environment}-backend"
-  vpc_id = module.vpc.vpc_id
-}
-
-# Security Groups - Frontend ECS
+# Security Group - Frontend ECS
 module "sg_frontend_ecs" {
   source = "./modules/security-groups/sg-frontend-ecs"
 
   name                  = "${var.environment}-frontend"
   vpc_id                = module.vpc.vpc_id
   container_port        = var.frontend_port
-  alb_security_group_id = module.sg_frontend_alb.security_group_id
+  alb_security_group_id = module.sg_alb.security_group_id
 }
 
-# Security Groups - Backend ECS
+# Security Group - Backend ECS
 module "sg_backend_ecs" {
   source = "./modules/security-groups/sg-backend-ecs"
 
   name                  = "${var.environment}-backend"
   vpc_id                = module.vpc.vpc_id
   container_port        = var.backend_port
-  alb_security_group_id = module.sg_backend_alb.security_group_id
+  alb_security_group_id = module.sg_alb.security_group_id
 }
 
-# Frontend ALB
-module "alb_frontend" {
-  source = "./modules/alb"
+# Security Group - RDS
+module "sg_rds" {
+  source = "./modules/security-groups/sg-rds"
 
-  service_name          = "${var.environment}-frontend"
-  vpc_id                = module.vpc.vpc_id
-  public_subnet_ids     = module.vpc.public_subnet_ids
-  alb_security_group_id = module.sg_frontend_alb.security_group_id
-  container_port        = var.frontend_port
+  name                          = "${var.environment}"
+  vpc_id                        = module.vpc.vpc_id
+  backend_ecs_security_group_id = module.sg_backend_ecs.security_group_id
 }
 
-# Backend ALB
-module "alb_backend" {
+# Single ALB with path-based routing
+module "alb" {
   source = "./modules/alb"
 
-  service_name          = "${var.environment}-backend"
+  name                  = "${var.environment}"
   vpc_id                = module.vpc.vpc_id
   public_subnet_ids     = module.vpc.public_subnet_ids
-  alb_security_group_id = module.sg_backend_alb.security_group_id
-  container_port        = var.backend_port
+  alb_security_group_id = module.sg_alb.security_group_id
+  frontend_port         = var.frontend_port
+  backend_port          = var.backend_port
 }
 
 # ECS Cluster
@@ -109,18 +101,19 @@ module "ecs_cluster" {
 # RDS MySQL Database
 module "rds" {
   source = "./modules/rds"
-  identifier             = "${var.environment}-mysql"
-  db_name                = var.db_name
-  db_username            = data.aws_ssm_parameter.db_username.value
-  db_password            = data.aws_ssm_parameter.db_password.value
-  private_subnet_ids     = module.vpc.private_subnet_ids
-  vpc_id                 = module.vpc.vpc_id
-  ecs_security_group_id  = module.sg_backend_ecs.security_group_id
-  allocated_storage      = var.db_allocated_storage
-  instance_class         = var.db_instance_class
+
+  identifier            = "${var.environment}-mysql"
+  db_name               = var.db_name
+  db_username           = data.aws_ssm_parameter.db_username.value
+  db_password           = data.aws_ssm_parameter.db_password.value
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  vpc_id                = module.vpc.vpc_id
+  ecs_security_group_id = module.sg_rds.security_group_id
+  allocated_storage     = var.db_allocated_storage
+  instance_class        = var.db_instance_class
 }
 
-# Frontend Service
+# Frontend ECS Service
 module "ecs_service_frontend" {
   source = "./modules/ecs-service"
 
@@ -133,20 +126,20 @@ module "ecs_service_frontend" {
   container_image              = var.frontend_image
   task_cpu                     = var.frontend_cpu
   task_memory                  = var.frontend_memory
-  target_group_arn             = module.alb_frontend.target_group_arn
+  target_group_arn             = module.alb.frontend_target_group_arn
   task_execution_role_arn      = module.iam.ecs_task_execution_role_arn
   task_role_arn                = module.iam.ecs_task_role_arn
   aws_region                   = var.aws_region
   ssm_secret_names             = []
   environment_variables        = var.frontend_env_vars
-  listener_arn                 = module.alb_frontend.listener_arn
+  listener_arn                 = module.alb.listener_arn
   task_execution_ssm_policy_id = module.iam.ecs_task_execution_ssm_policy_id
   cpu_target_value             = var.cpu_target_value
   private_subnet_ids           = module.vpc.private_subnet_ids
   ecs_tasks_security_group_id  = module.sg_frontend_ecs.security_group_id
 }
 
-# Backend Service
+# Backend ECS Service
 module "ecs_service_backend" {
   source = "./modules/ecs-service"
 
@@ -159,7 +152,7 @@ module "ecs_service_backend" {
   container_image              = var.backend_image
   task_cpu                     = var.backend_cpu
   task_memory                  = var.backend_memory
-  target_group_arn             = module.alb_backend.target_group_arn
+  target_group_arn             = module.alb.backend_target_group_arn
   task_execution_role_arn      = module.iam.ecs_task_execution_role_arn
   task_role_arn                = module.iam.ecs_task_role_arn
   aws_region                   = var.aws_region
@@ -178,7 +171,7 @@ module "ecs_service_backend" {
       value = var.db_name
     }
   ])
-  listener_arn                 = module.alb_backend.listener_arn
+  listener_arn                 = module.alb.listener_arn
   task_execution_ssm_policy_id = module.iam.ecs_task_execution_ssm_policy_id
   cpu_target_value             = var.cpu_target_value
   private_subnet_ids           = module.vpc.private_subnet_ids
