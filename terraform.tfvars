@@ -26,7 +26,7 @@ frontend_env_vars      = []
 
 # Backend Configuration
 backend_image         = "public.ecr.aws/nginx/nginx:latest"
-backend_port          = 3000
+backend_port          = 80
 backend_desired_count = 2
 backend_cpu           = 512
 backend_memory        = 1024
