@@ -4,8 +4,6 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      # the vpc module (6.x) and others now require AWS provider 6.28+;
-      # constrain to the current major release so we can upgrade safely
       version = ">= 6.28.0, < 7.0.0"
     }
   }

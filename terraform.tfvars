@@ -17,7 +17,7 @@ vpc_tags = {
 cluster_name = "prod-ecs-cluster"
 
 # Frontend Configuration
-frontend_image         = "public.ecr.aws/nginx/nginx:latest"
+frontend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-frontend:latest"
 frontend_port          = 80
 frontend_desired_count = 2
 frontend_cpu           = 256
@@ -25,8 +25,8 @@ frontend_memory        = 512
 frontend_env_vars      = []
 
 # Backend Configuration
-backend_image         = "public.ecr.aws/nginx/nginx:latest"
-backend_port          = 80
+backend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-backend:latest"
+backend_port          = 3000
 backend_desired_count = 2
 backend_cpu           = 512
 backend_memory        = 1024
