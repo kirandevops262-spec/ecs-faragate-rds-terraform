@@ -85,3 +85,24 @@ resource "aws_iam_role" "ecs_task_role" {
     }]
   })
 }
+
+resource "aws_iam_role_policy" "ecs_task_role_ssm" {
+  name = "ssm-runtime-access"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameters", "ssm:GetParameter", "ssm:GetParametersByPath"]
+        Resource = "arn:aws:ssm:${var.aws_region}:*:parameter/myapp/db/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = "*"
+      }
+    ]
+  })
+}

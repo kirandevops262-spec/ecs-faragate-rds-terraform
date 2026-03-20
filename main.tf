@@ -157,20 +157,7 @@ module "ecs_service_backend" {
   task_role_arn                = module.iam.ecs_task_role_arn
   aws_region                   = var.aws_region
   ssm_secret_names             = var.ssm_secret_names
-  environment_variables = concat(var.backend_env_vars, [
-    {
-      name  = "DB_HOST"
-      value = module.rds.address
-    },
-    {
-      name  = "DB_PORT"
-      value = tostring(module.rds.port)
-    },
-    {
-      name  = "DB_NAME"
-      value = var.db_name
-    }
-  ])
+  environment_variables = var.backend_env_vars
   listener_arn                 = module.alb.listener_arn
   task_execution_ssm_policy_id = module.iam.ecs_task_execution_ssm_policy_id
   cpu_target_value             = var.cpu_target_value

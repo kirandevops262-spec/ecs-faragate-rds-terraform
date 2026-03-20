@@ -17,7 +17,7 @@ vpc_tags = {
 cluster_name = "prod-ecs-cluster"
 
 # Frontend Configuration
-frontend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-frontend:latest"
+frontend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-frontend:2"
 frontend_port          = 80
 frontend_desired_count = 2
 frontend_cpu           = 256
@@ -25,12 +25,14 @@ frontend_memory        = 512
 frontend_env_vars      = []
 
 # Backend Configuration
-backend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-backend:latest"
-backend_port          = 3000
+backend_image         = "056026787582.dkr.ecr.us-east-1.amazonaws.com/production-backend:3"
+backend_port          = 3500
 backend_desired_count = 2
 backend_cpu           = 512
 backend_memory        = 1024
-backend_env_vars      = []
+backend_env_vars = [
+  { name = "USE_SSM", value = "true" }
+]
 
 # RDS Configuration
 db_name                      = "appdb"
